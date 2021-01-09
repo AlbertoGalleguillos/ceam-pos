@@ -11,42 +11,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ceam_pos/main.dart';
 
 void main() {
-  testWidgets('Verify User can Login', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Render Login', (WidgetTester tester) async {
     await tester.pumpWidget(MyApp());
 
-    //  (Logo image/text, 3 TextFormFields and a LoginButton)
-    // Verify Logo exists.
     expect(find.text('CEAM POS'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(3));
+    expect(find.text('Login'), findsOneWidget);
+  });
+
+  testWidgets('Verify that all fields are valid', (WidgetTester tester) async {
+    await tester.pumpWidget(MyApp());
+
     expect(find.text('Usuario'), findsOneWidget);
-    expect(find.text('Rut'), findsOneWidget);
-    expect(find.text('Contraseña'), findsOneWidget);
+
+    // await tester.enterText(find.by, 'ellanca');
+    // await tester.enterText(find.text('Rut'), '25107882-3');
+    // await tester.enterText(find.text('Contraseña'), '43734373');
     // expect(find.text('1'), findsNothing);
 
     // Tap the '+' icon and trigger a frame.
     await tester.tap(find.text('Login'));
     await tester.pump();
-
-    // Verify are in calculator screen.
-    // expect(find.text('CEAM POS'), findsNothing);
-    // expect(find.text('1'), findsOneWidget);
-  });
-
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
-
-    // Verify exist 5 elements in Login screen (Logo image/text, 3 TextFormFields and a LoginButton)
-    // Verify Logo exists.
-    expect(find.text('CEAM POS'), findsOneWidget);
-    expect(find.text('Usuario'), findsOneWidget);
-    expect(find.text('Rut'), findsOneWidget);
-    expect(find.text('Contraseña'), findsOneWidget);
-    // expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    // await tester.tap(find.byIcon(Icons.add));
-    // await tester.pump();
 
     // Verify that our counter has incremented.
     // expect(find.text('0'), findsNothing);
