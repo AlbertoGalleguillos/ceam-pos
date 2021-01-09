@@ -49,7 +49,8 @@ class PosDrawer extends StatelessWidget {
             leading: Icon(Icons.logout),
             title: Text('Cerrar sesión'),
             onTap: () {
-              unAvailableSection(context);
+              // TODO: clear user data, when gets
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
             },
           ),
         ],
@@ -66,6 +67,7 @@ class PosDrawer extends StatelessWidget {
         onPressed: () {},
       ),
     );
+    // TODO: change deprecated methods https://flutter.dev/docs/release/breaking-changes/scaffold-messenger
     Scaffold.of(context).removeCurrentSnackBar();
     Scaffold.of(context).showSnackBar(snackBar);
     Navigator.pop(context);

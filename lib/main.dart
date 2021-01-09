@@ -1,6 +1,7 @@
+import 'package:ceam_pos/login.dart';
+import 'package:ceam_pos/home.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ceam_pos/PosDrawer.dart';
 import 'package:ceam_pos/constants.dart' as Constants;
 
 void main() {
@@ -17,31 +18,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: title),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      drawer: PosDrawer(),
-      body: Center(
-        child: Text('Here goes calculator'),
-      ),
+      // home: Login(),
+      //MyHomePage(title: title)
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => Login(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/home': (context) => Home(),
+      },
     );
   }
 }
