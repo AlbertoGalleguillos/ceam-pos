@@ -1,3 +1,6 @@
+import 'package:ceam_pos/home.dart';
+import 'package:ceam_pos/print.dart';
+import 'package:ceam_pos/salesReport.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ceam_pos/constants.dart' as Constants;
@@ -28,14 +31,16 @@ class PosDrawer extends StatelessWidget {
             leading: Icon(Icons.point_of_sale),
             title: Text('Generar Boleta'),
             onTap: () {
-              unAvailableSection(context);
+              Navigator.of(context).pushNamed(Home.route);
+              // unAvailableSection(context);
             },
           ),
           ListTile(
             leading: Icon(Icons.account_balance),
             title: Text('Informe de Ventas'),
             onTap: () {
-              unAvailableSection(context);
+              Navigator.of(context).pushNamed(SalesReport.route);
+              // unAvailableSection(context);
             },
           ),
           ListTile(
@@ -45,12 +50,22 @@ class PosDrawer extends StatelessWidget {
               unAvailableSection(context);
             },
           ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.print),
+            title: Text('Impresión de prueba'),
+            onTap: () {
+              Navigator.of(context).pushNamed(PrinterApp.route);
+              // unAvailableSection(context);
+            },
+          ),
           ListTile(
             leading: Icon(Icons.logout),
             title: Text('Cerrar sesión'),
             onTap: () {
               // TODO: clear user data, when gets
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil('/', (route) => false);
             },
           ),
         ],

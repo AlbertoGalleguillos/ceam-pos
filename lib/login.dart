@@ -3,7 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'constants.dart' as Constants;
+
 class Login extends StatefulWidget {
+  static final String route = '/';
+
   @override
   _LoginState createState() => _LoginState();
 }
@@ -94,7 +98,7 @@ class _LoginState extends State<Login> {
 
   //TODO: Pass this function to UserServices
   Future<bool> canLogin() async {
-    String loginUrl = 'https://ceamspa.cl/pos/services/app/v1/validaLogin/';
+    String loginUrl = '${Constants.BASE_URL}/validaLogin/';
 
     final http.Response response = await http.post(
       loginUrl,
@@ -113,8 +117,8 @@ class _LoginState extends State<Login> {
       // TODO: Create User
       return true;
     } else {
-      final cannotLogin = jsonDecode(response.body)['mensaje'] ??
-          'Hubo un error al tratar de acceder';
+      const String ERROR_MESSAGE = 'Hubo un error al tratar de acceder';
+      final cannotLogin = jsonDecode(response.body)['mensaje'] ?? ERROR_MESSAGE;
       final snackBar = SnackBar(content: Text(cannotLogin));
       _scaffoldKey.currentState.hideCurrentSnackBar();
       _scaffoldKey.currentState.showSnackBar(snackBar);
