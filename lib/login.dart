@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:ceam_pos/providers/LoginProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import 'constants.dart' as Constants;
 
@@ -15,11 +17,11 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
-  TextEditingController userController = TextEditingController(text: 'ellanca');
+  TextEditingController userController = TextEditingController(text: 'agustin');
   TextEditingController rutController =
-      TextEditingController(text: '25107882-3');
+      TextEditingController(text: '77127713-6');
   TextEditingController passController =
-      TextEditingController(text: '43734373');
+      TextEditingController(text: '123');
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +116,8 @@ class _LoginState extends State<Login> {
     print(response.body);
 
     if (response.statusCode == 200) {
+      LoginProvider provider = Provider.of<LoginProvider>(context, listen: false);
+      provider.setCompany(response.body);
       // TODO: Create User
       return true;
     } else {

@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:ceam_pos/PosDrawer.dart';
 import 'package:ceam_pos/enums/paymentType.dart';
+import 'package:ceam_pos/providers/PrintProvider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'constants.dart' as Constants;
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:http/http.dart' as http;
@@ -20,20 +22,29 @@ class Home extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<Home> {
+  bool isPrinterConnected = false;
+
   @override
   Widget build(BuildContext context) {
-    // print('MediaQuery.of(context)');
-    // print('laalal');
-    // print(MediaQuery.of(context));
     final height = MediaQuery.of(context).size.height;
     final double buttonHeight = 100;
     final double appBarHeight = 111;
     final double calculatorHeight = height - buttonHeight - appBarHeight;
-    // print(height);
+
+    checkBlutethotisConected();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+              icon: isPrinterConnected
+                  ? Icon(Icons.print)
+                  : Icon(Icons.print_disabled),
+              onPressed: () {
+                print('Su impresora está conectada $isPrinterConnected');
+              }),
+        ],
       ),
       drawer: PosDrawer(),
       body: Column(
@@ -57,10 +68,9 @@ class _MyHomePageState extends State<Home> {
                       width: MediaQuery.of(context).size.width / 2 - 16,
                       child: ElevatedButton(
                         child: Text('Débito'),
-                        onPressed: () {
-                          makeSale(PaymentType.debit);
-                          print('Generate invoice debit');
-                        },
+                        onPressed: isPrinterConnected
+                            ? () => makeSale(PaymentType.debit, context)
+                            : null,
                       ),
                     ),
                     SizedBox(
@@ -68,10 +78,9 @@ class _MyHomePageState extends State<Home> {
                       width: MediaQuery.of(context).size.width / 2 - 16,
                       child: ElevatedButton(
                         child: Text('Efectivo'),
-                        onPressed: () {
-                          makeSale(PaymentType.cash);
-                          print('Generate invoice cash');
-                        },
+                        onPressed: isPrinterConnected
+                            ? () => makeSale(PaymentType.cash, context)
+                            : null,
                       ),
                     ),
                   ],
@@ -81,14 +90,23 @@ class _MyHomePageState extends State<Home> {
       ),
     );
   }
+
+  checkBlutethotisConected() async {
+    final bluetooth = Provider.of<PrintProvider>(context).bluetooth;
+    final isConnected = await bluetooth.isConnected;
+    // if (isPrinterConnected != isConnected) {
+    setState(() => isPrinterConnected = isConnected);
+    // }
+    print('Bluethoot: isConnected $isPrinterConnected');
+  }
 }
 
 // Make sales
-void makeSale(PaymentType paymentType) async {
+void makeSale(PaymentType paymentType, BuildContext context) async {
   final invoiceNumber = await createSale(paymentType);
   print('Generating sale for folio: $invoiceNumber');
   createInvoice(paymentType, invoiceNumber);
-  printInvoice();
+  printInvoice(invoiceNumber, context);
 }
 
 Future<int> createSale(PaymentType paymentType) async {
@@ -154,6 +172,7 @@ void createInvoice(PaymentType paymentType, int invoiceNumber) async {
   }
 }
 
-void printInvoice() {
-
+void printInvoice(int invoiceNumber, BuildContext context) {
+  PrintProvider provider = Provider.of<PrintProvider>(context, listen: false);
+  provider.printInvoice(invoiceNumber: invoiceNumber);
 }

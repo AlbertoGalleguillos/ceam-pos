@@ -1,10 +1,9 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:ceam_pos/providers/PrintProvider.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 class PrinterApp extends StatefulWidget {
   static final String route = 'testPrinter';
@@ -138,9 +137,13 @@ class _MyAppState extends State<PrinterApp> {
     } else {
       bluetooth.isConnected.then((isConnected) {
         if (!isConnected) {
-          bluetooth.connect(_device).catchError((error) {
-            setState(() => _pressed = false);
-          });
+          PrintProvider provider =
+              Provider.of<PrintProvider>(context, listen: false);
+          provider.connect(_device);
+
+          // bluetooth.connect(_device).catchError((error) {
+          //   setState(() => _pressed = false);
+          // });
           setState(() => _pressed = true);
         }
       });
@@ -153,39 +156,8 @@ class _MyAppState extends State<PrinterApp> {
   }
 
   void _testPrint() async {
-    //SIZE
-    const NORMAL_TEXT = 0;
-    const BOLD_SMALL_TEXT = 1;
-    const BOLD_MEDIUM_TEXT = 2;
-    const BOLD_LARGE_TEXT = 3;
-    //ALIGN
-    const ESC_ALIGN_LEFT = 0;
-    const ESC_ALIGN_CENTER = 1;
-    const ESC_ALIGN_RIGHT = 2;
-    bluetooth.isConnected.then((isConnected) {
-      if (isConnected) {
-        final lineSize = 32;
-        bluetooth.printCustom('-' * lineSize, NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printCustom('R.U.T.: 99.999.999-9', NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printCustom('Boleta electronica', NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printCustom('No. 466', NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printCustom('-' * lineSize, NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printCustom('S.I.I. Santiago', NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printNewLine();
-        bluetooth.printCustom("Tu tienda S.A.", NORMAL_TEXT, ESC_ALIGN_LEFT);
-        bluetooth.printCustom("Venta al por menor de Alimentos", NORMAL_TEXT, ESC_ALIGN_LEFT);
-        bluetooth.printCustom("Prat #533 Curico", NORMAL_TEXT, ESC_ALIGN_LEFT);
-        bluetooth.printCustom("Fecha Emision 22-01-2021", NORMAL_TEXT, ESC_ALIGN_LEFT);
-        bluetooth.printNewLine();
-        bluetooth.printLeftRight("TOTAL:", "\$ 30.000", NORMAL_TEXT);
-        bluetooth.printNewLine();
-        bluetooth.printCustom('El IVA de esta boleta es \$ 4.790', NORMAL_TEXT, ESC_ALIGN_CENTER);
-        bluetooth.printNewLine();
-        bluetooth.printNewLine();
-
-        bluetooth.paperCut();
-      }
-    });
+    PrintProvider provider = Provider.of<PrintProvider>(context, listen: false);
+    provider.testPrint();
   }
 
   Future show(
