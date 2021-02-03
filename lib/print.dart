@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:ceam_pos/PosDrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:ceam_pos/providers/PrintProvider.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:ceam_pos/constants.dart' as Constants;
 
 class PrinterApp extends StatefulWidget {
   static final String route = 'testPrinter';
@@ -64,51 +66,49 @@ class _MyAppState extends State<PrinterApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Blue Thermal Printer'),
-        ),
-        body: Container(
-          child: ListView(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      'Device:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(Constants.APP_NAME),
+      ),
+      drawer: PosDrawer(),
+      body: Container(
+        child: ListView(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'Dispositivo:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
-                    DropdownButton(
-                      items: _getDeviceItems(),
-                      onChanged: (value) => setState(() => _device = value),
-                      value: _device,
-                    ),
-                    RaisedButton(
-                      onPressed: _pressed
-                          ? null
-                          : _connected
-                              ? _disconnect
-                              : _connect,
-                      child: Text(_connected ? 'Disconnect' : 'Connect'),
-                    ),
-                  ],
-                ),
+                  ),
+                  DropdownButton(
+                    items: _getDeviceItems(),
+                    onChanged: (value) => setState(() => _device = value),
+                    value: _device,
+                  ),
+                  RaisedButton(
+                    onPressed: _pressed
+                        ? null
+                        : _connected
+                            ? _disconnect
+                            : _connect,
+                    child: Text(_connected ? 'Desconec' : 'Conectar'),
+                  ),
+                ],
               ),
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
-                child: RaisedButton(
-                  onPressed: _connected ? _testPrint : null,
-                  child: Text('Test Print'),
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
+              child: RaisedButton(
+                onPressed: _connected ? _testPrint : null,
+                child: Text('Impresión de prueba'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

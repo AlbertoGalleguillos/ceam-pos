@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ceam_pos/PosDrawer.dart';
+import 'package:ceam_pos/customCalculator.dart';
 import 'package:ceam_pos/enums/paymentType.dart';
 import 'package:ceam_pos/providers/PrintProvider.dart';
 import 'package:flutter/foundation.dart';
@@ -34,8 +35,9 @@ class _MyHomePageState extends State<Home> {
     checkBlutethotisConected();
 
     return Scaffold(
+      backgroundColor: Color(Constants.SECONDARY_COLOR),
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(Constants.APP_NAME),
         actions: [
           IconButton(
               icon: isPrinterConnected
@@ -51,9 +53,7 @@ class _MyHomePageState extends State<Home> {
         children: [
           Container(
             height: calculatorHeight,
-            child: SimpleCalculator(
-                // hideSurroundingBorder: true,
-                ),
+            child: HomePage(), // Calculator
           ),
           SizedBox(
             height: buttonHeight,
@@ -97,7 +97,7 @@ class _MyHomePageState extends State<Home> {
     // if (isPrinterConnected != isConnected) {
     setState(() => isPrinterConnected = isConnected);
     // }
-    print('Bluethoot: isConnected $isPrinterConnected');
+    // print('Bluethoot: isConnected $isPrinterConnected');
   }
 }
 

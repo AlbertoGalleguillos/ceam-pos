@@ -24,11 +24,14 @@ dependencies:
   flutter:
     sdk: flutter
 
+  barcode: ^1.17.1
+  barcode_image: ^1.2.0
   blue_thermal_printer: ^1.1.1
   flutter_simple_calculator: ^1.0.4
   http: ^0.12.2
   path_provider: ^1.6.27
   provider: ^4.3.3
+  math_expressions: ^2.0.0
 
 
 

@@ -15,17 +15,19 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
-  TextEditingController userController = TextEditingController(text: 'agustin');
+  TextEditingController userController =
+      TextEditingController(); // text: 'agustin'
   TextEditingController rutController =
-      TextEditingController(text: '77127713-6');
-  TextEditingController passController =
-      TextEditingController(text: '123');
+      TextEditingController(); // text: '77127713-6'
+  TextEditingController passController = TextEditingController(); // text: '123'
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff98d7cd),
       key: _scaffoldKey,
       body: Form(
         key: _formKey,
@@ -34,11 +36,16 @@ class _LoginState extends State<Login> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('CEAM POS',
-                  style: TextStyle(fontSize: 96), textAlign: TextAlign.center),
+              Text(
+                'CEAM POS',
+                style: TextStyle(fontSize: 96),
+                textAlign: TextAlign.center,
+              ),
               TextFormField(
                 controller: userController,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(),
                   labelText: 'Usuario',
                 ),
@@ -52,6 +59,8 @@ class _LoginState extends State<Login> {
               TextFormField(
                 controller: rutController,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(),
                   labelText: 'Rut',
                 ),
@@ -66,6 +75,8 @@ class _LoginState extends State<Login> {
                 controller: passController,
                 obscureText: true,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(),
                   labelText: 'Contraseña',
                 ),
@@ -76,13 +87,15 @@ class _LoginState extends State<Login> {
                   return null;
                 },
               ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  attemptLogin(context);
-                },
-                label: Text('Login'),
-                icon: Icon(Icons.login),
-              )
+              isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton.icon(
+                      onPressed: () {
+                        attemptLogin(context);
+                      },
+                      label: Text('Login'),
+                      icon: Icon(Icons.login),
+                    ),
             ],
           ),
         ),
@@ -95,11 +108,15 @@ class _LoginState extends State<Login> {
       if (await canLogin()) {
         Navigator.of(context).pushNamed('/home');
       }
+      setState(() => isLoading = false);
     }
   }
 
   //TODO: Pass this function to UserServices
   Future<bool> canLogin() async {
+    setState(() => isLoading = true);
+
+    FocusScope.of(context).unfocus();
     String loginUrl = '${Constants.BASE_URL}/validaLogin/';
 
     final http.Response response = await http.post(
@@ -116,7 +133,8 @@ class _LoginState extends State<Login> {
     print(response.body);
 
     if (response.statusCode == 200) {
-      LoginProvider provider = Provider.of<LoginProvider>(context, listen: false);
+      LoginProvider provider =
+          Provider.of<LoginProvider>(context, listen: false);
       provider.setCompany(response.body);
       // TODO: Create User
       return true;

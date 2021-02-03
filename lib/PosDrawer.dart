@@ -14,38 +14,36 @@ class PosDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Center(
-              child: Text(
+            child: const Center(
+              child: const Text(
                 Constants.APP_NAME,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
                 ),
               ),
             ),
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Color(Constants.PRIMARY_COLOR),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.point_of_sale),
-            title: Text('Generar Boleta'),
+            leading: const Icon(Icons.point_of_sale),
+            title: const Text(Constants.MENU_GENERATE_INVOICE),
             onTap: () {
               Navigator.of(context).pushNamed(Home.route);
-              // unAvailableSection(context);
             },
           ),
+          // ListTile(
+          //   leading: Icon(Icons.account_balance),
+          //   title: Text(Constants.MENU_SALES_REPORT),
+          //   onTap: () {
+          //     Navigator.of(context).pushNamed(SalesReport.route);
+          //   },
+          // ),
           ListTile(
-            leading: Icon(Icons.account_balance),
-            title: Text('Informe de Ventas'),
-            onTap: () {
-              Navigator.of(context).pushNamed(SalesReport.route);
-              // unAvailableSection(context);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.cached),
-            title: Text('Reimprimir última boleta'),
+            leading: const Icon(Icons.cached),
+            title: const Text(Constants.MENU_REPRINT),
             onTap: () {
               unAvailableSection(context);
             },
@@ -53,15 +51,15 @@ class PosDrawer extends StatelessWidget {
           Divider(),
           ListTile(
             leading: Icon(Icons.print),
-            title: Text('Impresión de prueba'),
+            title: Text(Constants.MENU_PRINTER_SETTINGS),
             onTap: () {
               Navigator.of(context).pushNamed(PrinterApp.route);
-              // unAvailableSection(context);
             },
           ),
+          Divider(),
           ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Cerrar sesión'),
+            leading: const Icon(Icons.logout),
+            title: const Text(Constants.MENU_LOGOUT),
             onTap: () {
               // TODO: clear user data, when gets
               Navigator.of(context)
