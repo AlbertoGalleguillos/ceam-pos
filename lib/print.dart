@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:ceam_pos/PosAppBar.dart';
 import 'package:ceam_pos/PosDrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:ceam_pos/providers/PrintProvider.dart';
@@ -11,7 +12,7 @@ class PrinterApp extends StatefulWidget {
   static final String route = 'testPrinter';
 
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<PrinterApp> {
@@ -35,7 +36,7 @@ class _MyAppState extends State<PrinterApp> {
     try {
       devices = await bluetooth.getBondedDevices();
     } on PlatformException {
-      // TODO - Error
+      print('Ocurrio un error al traer los dispositivos bluetooth');
     }
 
     bluetooth.onStateChanged().listen((state) {
@@ -66,10 +67,11 @@ class _MyAppState extends State<PrinterApp> {
 
   @override
   Widget build(BuildContext context) {
+    const subListPadding = EdgeInsets.only(left: 40, right: 16);
+    final isConnected = Provider.of<PrintProvider>(context).isConnected;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(Constants.APP_NAME),
-      ),
+      appBar: posAppBar(),
       drawer: PosDrawer(),
       body: Container(
         child: ListView(
@@ -93,24 +95,88 @@ class _MyAppState extends State<PrinterApp> {
                   RaisedButton(
                     onPressed: _pressed
                         ? null
-                        : _connected
+                        : isConnected
                             ? _disconnect
                             : _connect,
-                    child: Text(_connected ? 'Desconec' : 'Conectar'),
+                    child: Text(isConnected ? 'Desconec' : 'Conectar'),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
-              child: RaisedButton(
-                onPressed: _connected ? _testPrint : null,
-                child: Text('Impresión de prueba'),
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.help_outline),
+                    title: Text(
+                      'Como configurar la impresora:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text('Instructivo'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.android),
+                    title: Text(
+                      'Configuración del dispositivo:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  ListTile(
+                    contentPadding: subListPadding,
+                    leading: Icon(Icons.bluetooth),
+                    title: Text(
+                        'Verifique que el bluetooth de su dispositivo se encuentre encendido'),
+                  ),
+                  ListTile(
+                    contentPadding: subListPadding,
+                    leading: Icon(Icons.bluetooth_connected),
+                    title: Text(
+                        'Conecte la impresora bluetooth, su nombre es "MTP-2"'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.app_settings_alt),
+                    title: Text(
+                      'Configuración de la aplicación:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  ListTile(
+                    contentPadding: subListPadding,
+                    leading: Icon(Icons.list),
+                    title: Text(
+                        'Seleccione "MTP-2" en el listado de la sección superior de esta pantalla'),
+                  ),
+                  ListTile(
+                    contentPadding: subListPadding,
+                    leading: Icon(Icons.touch_app),
+                    title: Text('Presione el botón conectar'),
+                  ),
+                  ListTile(
+                    contentPadding: subListPadding,
+                    leading: Icon(Icons.check),
+                    title:
+                        Text('Listo! Ya puedes generar boletas electrónicas'),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8),
+        child: SizedBox(
+          width: double.infinity,
+          child: FloatingActionButton.extended(
+            backgroundColor:
+            isConnected ? Color(Constants.PRIMARY_COLOR) : Colors.grey,
+            onPressed: isConnected ? _testPrint : null,
+            label: const Text('Impresión de prueba'),
+            icon: Icon(Icons.receipt),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -155,9 +221,8 @@ class _MyAppState extends State<PrinterApp> {
     setState(() => _pressed = true);
   }
 
-  void _testPrint() async {
-    PrintProvider provider = Provider.of<PrintProvider>(context, listen: false);
-    provider.testPrint();
+  void _testPrint() {
+    Provider.of<PrintProvider>(context, listen: false).testPrint();
   }
 
   Future show(

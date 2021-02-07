@@ -18,9 +18,15 @@ class PrintProvider extends ChangeNotifier {
 
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   int total = 0;
+  bool isConnected = false;
 
   setTotal(String newTotal) {
     total = int.parse(newTotal);
+    notifyListeners();
+  }
+
+  setConnectionStatus(bool value) {
+    isConnected = value;
     notifyListeners();
   }
 

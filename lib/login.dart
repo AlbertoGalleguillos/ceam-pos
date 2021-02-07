@@ -4,6 +4,7 @@ import 'package:ceam_pos/providers/LoginProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 
 import 'constants.dart' as Constants;
 
@@ -18,29 +19,47 @@ class _LoginState extends State<Login> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   TextEditingController userController =
-      TextEditingController(); // text: 'agustin'
+      TextEditingController(text: 'agustin'); // text: 'agustin'
   TextEditingController rutController =
-      TextEditingController(); // text: '77127713-6'
-  TextEditingController passController = TextEditingController(); // text: '123'
+      TextEditingController(text: '77127713-6'); // text: '77127713-6'
+  TextEditingController passController =
+      TextEditingController(text: '123'); // text: '123'
   bool isLoading = false;
+  bool isKeyboardVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    KeyboardVisibilityNotification().addNewListener(
+      onChange: (bool visible) {
+        setState(() => isKeyboardVisible = visible);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff98d7cd),
+      backgroundColor: const Color(Constants.SECONDARY_COLOR),
       key: _scaffoldKey,
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(
+            bottom: 64.0,
+            top: 16.0,
+            right: 16,
+            left: 16,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(
-                'CEAM POS',
-                style: TextStyle(fontSize: 96),
-                textAlign: TextAlign.center,
-              ),
+              if (!isKeyboardVisible)
+                Image.asset(
+                  Constants.CEAM_LOGO_PATH,
+                  scale: 0.5,
+                ),
+              // Spacer(),
               TextFormField(
                 controller: userController,
                 decoration: InputDecoration(
@@ -87,19 +106,28 @@ class _LoginState extends State<Login> {
                   return null;
                 },
               ),
-              isLoading
-                  ? CircularProgressIndicator()
-                  : ElevatedButton.icon(
-                      onPressed: () {
-                        attemptLogin(context);
-                      },
-                      label: Text('Login'),
-                      icon: Icon(Icons.login),
-                    ),
             ],
           ),
         ),
       ),
+      floatingActionButton: isLoading
+          ? CircularProgressIndicator()
+          : Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: FloatingActionButton.extended(
+                  backgroundColor: const Color(Constants.PRIMARY_COLOR),
+                  onPressed: () {
+                    attemptLogin(context);
+                  },
+                  icon: const Icon(Icons.login),
+                  label: const Text(Constants.LOGIN_ACTION_TEXT),
+                ),
+              ),
+            ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

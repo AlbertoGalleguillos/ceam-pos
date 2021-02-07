@@ -29,9 +29,11 @@ dependencies:
   blue_thermal_printer: ^1.1.1
   flutter_simple_calculator: ^1.0.4
   http: ^0.12.2
+  keyboard_visibility: ^0.5.6
   path_provider: ^1.6.27
   provider: ^4.3.3
   math_expressions: ^2.0.0
+  shared_preferences: ^0.5.12+4
 
 
 
@@ -53,6 +55,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+    - assets/images/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

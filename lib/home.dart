@@ -1,14 +1,14 @@
 import 'dart:convert';
 
 import 'package:ceam_pos/PosDrawer.dart';
-import 'package:ceam_pos/customCalculator.dart';
+import 'package:ceam_pos/calculator.dart';
 import 'package:ceam_pos/enums/paymentType.dart';
 import 'package:ceam_pos/providers/PrintProvider.dart';
+import 'package:ceam_pos/providers/SettingsProvider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'constants.dart' as Constants;
-import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
@@ -34,18 +34,19 @@ class _MyHomePageState extends State<Home> {
 
     checkBlutethotisConected();
 
+    final isDebitEnable = Provider.of<SettingsProvider>(context).isDebitEnable;
+    final buttonWidth = isDebitEnable
+        ? MediaQuery.of(context).size.width / 2 - 16
+        : MediaQuery.of(context).size.width / 1 - 16;
+
     return Scaffold(
       backgroundColor: Color(Constants.SECONDARY_COLOR),
       appBar: AppBar(
         title: Text(Constants.APP_NAME),
         actions: [
-          IconButton(
-              icon: isPrinterConnected
-                  ? Icon(Icons.print)
-                  : Icon(Icons.print_disabled),
-              onPressed: () {
-                print('Su impresora está conectada $isPrinterConnected');
-              }),
+          PrinterIcon(
+            isConnected: isPrinterConnected,
+          ),
         ],
       ),
       drawer: PosDrawer(),
@@ -53,7 +54,7 @@ class _MyHomePageState extends State<Home> {
         children: [
           Container(
             height: calculatorHeight,
-            child: HomePage(), // Calculator
+            child: Calculator(), // Calculator
           ),
           SizedBox(
             height: buttonHeight,
@@ -63,21 +64,24 @@ class _MyHomePageState extends State<Home> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    SizedBox(
-                      height: buttonHeight,
-                      width: MediaQuery.of(context).size.width / 2 - 16,
-                      child: ElevatedButton(
-                        child: Text('Débito'),
-                        onPressed: isPrinterConnected
-                            ? () => makeSale(PaymentType.debit, context)
-                            : null,
+                    if (isDebitEnable)
+                      SizedBox(
+                        height: buttonHeight,
+                        width: buttonWidth,
+                        child: ElevatedButton.icon(
+                          icon: Icon(Icons.credit_card),
+                          label: Text('Débito'),
+                          onPressed: isPrinterConnected
+                              ? () => makeSale(PaymentType.debit, context)
+                              : null,
+                        ),
                       ),
-                    ),
                     SizedBox(
                       height: buttonHeight,
-                      width: MediaQuery.of(context).size.width / 2 - 16,
-                      child: ElevatedButton(
-                        child: Text('Efectivo'),
+                      width: buttonWidth,
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.attach_money),
+                        label: Text('Efectivo'),
                         onPressed: isPrinterConnected
                             ? () => makeSale(PaymentType.cash, context)
                             : null,
@@ -92,12 +96,36 @@ class _MyHomePageState extends State<Home> {
   }
 
   checkBlutethotisConected() async {
-    final bluetooth = Provider.of<PrintProvider>(context).bluetooth;
-    final isConnected = await bluetooth.isConnected;
+    final provider = Provider.of<PrintProvider>(context);
+    final isConnected = await provider.bluetooth.isConnected;
     // if (isPrinterConnected != isConnected) {
     setState(() => isPrinterConnected = isConnected);
-    // }
-    // print('Bluethoot: isConnected $isPrinterConnected');
+    provider.setConnectionStatus(isConnected);
+  }
+}
+
+class PrinterIcon extends StatelessWidget {
+  final bool isConnected;
+
+  const PrinterIcon({Key key, this.isConnected}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final cannotPrint = 'Su impresora no está conectada';
+    final canPrint = 'Su impresora está conectada';
+
+    return IconButton(
+      icon: isConnected
+          ? Icon(Icons.print, color: Colors.green)
+          : Icon(Icons.print_disabled, color: Colors.red),
+      onPressed: () {
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isConnected ? canPrint : cannotPrint),
+          ),
+        );
+      },
+    );
   }
 }
 

@@ -1,6 +1,6 @@
 import 'package:ceam_pos/home.dart';
 import 'package:ceam_pos/print.dart';
-import 'package:ceam_pos/salesReport.dart';
+import 'package:ceam_pos/settings.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ceam_pos/constants.dart' as Constants;
@@ -14,14 +14,9 @@ class PosDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: const Center(
-              child: const Text(
-                Constants.APP_NAME,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                ),
-              ),
+            padding: EdgeInsets.zero,
+            child: Center(
+              child: Image.asset(Constants.CEAM_LOGO_PATH),
             ),
             decoration: BoxDecoration(
               color: Color(Constants.PRIMARY_COLOR),
@@ -31,7 +26,7 @@ class PosDrawer extends StatelessWidget {
             leading: const Icon(Icons.point_of_sale),
             title: const Text(Constants.MENU_GENERATE_INVOICE),
             onTap: () {
-              Navigator.of(context).pushNamed(Home.route);
+              Navigator.of(context).popAndPushNamed(Home.route);
             },
           ),
           // ListTile(
@@ -53,7 +48,14 @@ class PosDrawer extends StatelessWidget {
             leading: Icon(Icons.print),
             title: Text(Constants.MENU_PRINTER_SETTINGS),
             onTap: () {
-              Navigator.of(context).pushNamed(PrinterApp.route);
+              Navigator.of(context).popAndPushNamed(PrinterApp.route);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text(Constants.MENU_OTHER_SETTINGS),
+            onTap: () {
+              Navigator.of(context).popAndPushNamed(Settings.route);
             },
           ),
           Divider(),
