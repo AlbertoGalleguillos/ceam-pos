@@ -54,12 +54,7 @@ class _LoginState extends State<Login> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              if (!isKeyboardVisible)
-                Image.asset(
-                  Constants.CEAM_LOGO_PATH,
-                  scale: 0.5,
-                ),
-              // Spacer(),
+              if (!isKeyboardVisible) Image.asset(Constants.CEAM_LOGO_PATH),
               TextFormField(
                 controller: userController,
                 decoration: InputDecoration(
@@ -69,10 +64,7 @@ class _LoginState extends State<Login> {
                   labelText: 'Usuario',
                 ),
                 validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Ingrese su usuario';
-                  }
-                  return null;
+                  return value.isEmpty ? 'Ingrese su usuario' : null;
                 },
               ),
               TextFormField(
@@ -84,10 +76,11 @@ class _LoginState extends State<Login> {
                   labelText: 'Rut',
                 ),
                 validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Ingrese su Rut';
-                  }
-                  return null;
+                  return value.isEmpty ? 'Ingrese su Rut' : null;
+                  // if (value.isEmpty) {
+                  //   return 'Ingrese su Rut';
+                  // }
+                  // return null;
                 },
               ),
               TextFormField(
@@ -100,22 +93,21 @@ class _LoginState extends State<Login> {
                   labelText: 'Contraseña',
                 ),
                 validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Ingrese su contraseña';
-                  }
-                  return null;
+                  return value.isEmpty ? 'Ingrese su contraseña' : null;
                 },
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: isLoading
-          ? CircularProgressIndicator()
-          : Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8),
-              child: SizedBox(
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 32.0,
+          vertical: 8,
+        ),
+        child: isLoading
+            ? CircularProgressIndicator()
+            : SizedBox(
                 width: double.infinity,
                 child: FloatingActionButton.extended(
                   backgroundColor: const Color(Constants.PRIMARY_COLOR),
@@ -126,7 +118,7 @@ class _LoginState extends State<Login> {
                   label: const Text(Constants.LOGIN_ACTION_TEXT),
                 ),
               ),
-            ),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }

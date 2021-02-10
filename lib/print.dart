@@ -16,11 +16,13 @@ class PrinterApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<PrinterApp> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
 
   List<BluetoothDevice> _devices = [];
   BluetoothDevice _device;
-  bool _connected = false;
+
+  // bool _connected = false;
   bool _pressed = false;
   String pathImage;
 
@@ -37,19 +39,21 @@ class _MyAppState extends State<PrinterApp> {
       devices = await bluetooth.getBondedDevices();
     } on PlatformException {
       print('Ocurrio un error al traer los dispositivos bluetooth');
+    } catch (e) {
+      print('Ocurrio un error al traer los dispositivos bluetooth $e');
     }
 
     bluetooth.onStateChanged().listen((state) {
       switch (state) {
         case BlueThermalPrinter.CONNECTED:
           setState(() {
-            _connected = true;
+            // _connected = true;
             _pressed = false;
           });
           break;
         case BlueThermalPrinter.DISCONNECTED:
           setState(() {
-            _connected = false;
+            // _connected = false;
             _pressed = false;
           });
           break;
@@ -71,6 +75,7 @@ class _MyAppState extends State<PrinterApp> {
     final isConnected = Provider.of<PrintProvider>(context).isConnected;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: posAppBar(),
       drawer: PosDrawer(),
       body: Container(
@@ -169,7 +174,7 @@ class _MyAppState extends State<PrinterApp> {
           width: double.infinity,
           child: FloatingActionButton.extended(
             backgroundColor:
-            isConnected ? Color(Constants.PRIMARY_COLOR) : Colors.grey,
+                isConnected ? Color(Constants.PRIMARY_COLOR) : Colors.grey,
             onPressed: isConnected ? _testPrint : null,
             label: const Text('Impresión de prueba'),
             icon: Icon(Icons.receipt),
@@ -184,7 +189,7 @@ class _MyAppState extends State<PrinterApp> {
     List<DropdownMenuItem<BluetoothDevice>> items = [];
     if (_devices.isEmpty) {
       items.add(DropdownMenuItem(
-        child: Text('NONE'),
+        child: Text('Bluethoot Apagado'),
       ));
     } else {
       _devices.forEach((device) {
@@ -199,17 +204,18 @@ class _MyAppState extends State<PrinterApp> {
 
   void _connect() {
     if (_device == null) {
-      show('No device selected.');
+      show('No se ha seleccionado ningún dispositivo.');
     } else {
       bluetooth.isConnected.then((isConnected) {
         if (!isConnected) {
           PrintProvider provider =
               Provider.of<PrintProvider>(context, listen: false);
-          provider.connect(_device);
+          provider.connect(_device).catchError((error) {
+            // print('Los errores se están manejando $error');
+            setState(() => _pressed = false);
+            show(error);
+          });
 
-          // bluetooth.connect(_device).catchError((error) {
-          //   setState(() => _pressed = false);
-          // });
           setState(() => _pressed = true);
         }
       });
@@ -229,8 +235,9 @@ class _MyAppState extends State<PrinterApp> {
     String message, {
     Duration duration: const Duration(seconds: 3),
   }) async {
-    await new Future.delayed(new Duration(milliseconds: 100));
-    Scaffold.of(context).showSnackBar(
+    // await new Future.delayed(new Duration(milliseconds: 100));
+    _scaffoldKey.currentState.hideCurrentSnackBar();
+    _scaffoldKey.currentState.showSnackBar(
       new SnackBar(
         content: new Text(
           message,

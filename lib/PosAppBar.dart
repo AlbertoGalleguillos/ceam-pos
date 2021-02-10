@@ -22,6 +22,7 @@ class PrinterIcon extends StatelessWidget {
           ? Icon(Icons.print, color: Colors.green)
           : Icon(Icons.print_disabled, color: Colors.red),
       onPressed: () {
+        Scaffold.of(context).hideCurrentSnackBar();
         Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text(isConnected

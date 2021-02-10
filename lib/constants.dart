@@ -15,6 +15,7 @@ const String MENU_REPRINT = 'Reimprimir última boleta';
 const String MENU_PRINTER_SETTINGS = 'Configurar impresora';
 const String MENU_OTHER_SETTINGS = 'Otras configuraciones';
 const String MENU_LOGOUT = 'Cerrar sesión';
+const String NOT_INVOICE_AVAILABLE = 'No existen boletas a reimprimir';
 const String PAYMENT_TYPE_DEBIT = 'Tarjeta Debito';
 const String PAYMENT_TYPE_CASH = 'Efectivo';
 const String PAYMENT_TYPE_CREDIT = 'Tarjeta Credito';

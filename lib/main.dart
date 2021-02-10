@@ -12,17 +12,20 @@ import 'package:ceam_pos/constants.dart' as Constants;
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
-      ChangeNotifierProvider<SettingsProvider>(create: (_) => SettingsProvider()),
-      ChangeNotifierProxyProvider<LoginProvider, PrintProvider>(
-        update: (context, login, previousMessages) => PrintProvider(login),
-        create: (BuildContext context) => PrintProvider(null),
-      ),
-    ],
-    child: MyApp(),
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
+        ChangeNotifierProvider<SettingsProvider>(
+            create: (_) => SettingsProvider()),
+        ChangeNotifierProxyProvider<LoginProvider, PrintProvider>(
+          update: (context, login, _) => PrintProvider(login),
+          create: (BuildContext context) => PrintProvider(null),
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 //TODO: v.0.0.1
@@ -42,7 +45,7 @@ void main() {
 // ✅ Agregar Logo en Menú lateral
 // - Que los pagos con débito no generen boleta, solo la venta
 // ✅ Agregar Configuración para que pueda elegir entre un solo botón de impresión o dos (débito y factura)
-// ✅ La opción de solo un botón es la que viene por defecto.
+// ✅ La opción de solo un bot    final snackBar = ;ón es la que viene por defecto.
 // ✅ Agregar ícono en los botones de forma de pago.
 // - Agregar subtotal en la calculadora.
 // - Hacer que el botón "<-" borre un solo caracter.
@@ -52,14 +55,14 @@ void main() {
 // ✅ Dejar el componente de AppBar en todas las pantallas
 
 // Bugs conocidos
-// No existe un mensaje de error al fallar la conexión a la impresora.
+// ✅ No existe un mensaje de error al fallar la conexión a la impresora. (Bluetooth apagado)
+// ✅ No existe un mensaje de error al fallar la conexión a la impresora.
 // ✅ Corregir navegación, se quedan abiertas las pantallas y es raro el historial.
 // Poner el mismo color de fondo en todas partes
 // ✅ Hacer que el botón de "Impresión de prueba" dependa de la conexión general de la impresora
 // ✅ Hacer que el elemento seleccionado de bluethoth y su conexión se ven reflejados en la pantalla de configuración
-// Solucionar error "Stream has already been listened to." (Al volver a cargal el home)
+// ✅ Solucionar error "Stream has already been listened to." (Al volver a cargal el home)
 //
-
 
 class MyApp extends StatelessWidget {
   @override

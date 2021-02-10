@@ -1,22 +1,15 @@
-import 'dart:convert';
-
+import 'package:ceam_pos/PosAppBar.dart';
 import 'package:ceam_pos/PosDrawer.dart';
 import 'package:ceam_pos/calculator.dart';
 import 'package:ceam_pos/enums/paymentType.dart';
 import 'package:ceam_pos/providers/PrintProvider.dart';
 import 'package:ceam_pos/providers/SettingsProvider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:ceam_pos/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'constants.dart' as Constants;
-import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
   static final String route = '/home';
-
-  Home({Key key, this.title = Constants.APP_NAME}) : super(key: key);
-
-  final String title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -39,16 +32,13 @@ class _MyHomePageState extends State<Home> {
         ? MediaQuery.of(context).size.width / 2 - 16
         : MediaQuery.of(context).size.width / 1 - 16;
 
+    bool isValidAmount = Provider.of<PrintProvider>(context).isValidAmount();
+    bool canPrint = isPrinterConnected && isValidAmount;
+
     return Scaffold(
-      backgroundColor: Color(Constants.SECONDARY_COLOR),
-      appBar: AppBar(
-        title: Text(Constants.APP_NAME),
-        actions: [
-          PrinterIcon(
-            isConnected: isPrinterConnected,
-          ),
-        ],
-      ),
+      // backgroundColor: Color(Constants.SECONDARY_COLOR),
+      backgroundColor: Color.fromARGB(196, 32, 64, 96),
+      appBar: posAppBar(),
       drawer: PosDrawer(),
       body: Column(
         children: [
@@ -60,35 +50,36 @@ class _MyHomePageState extends State<Home> {
             height: buttonHeight,
             width: double.infinity,
             child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    if (isDebitEnable)
-                      SizedBox(
-                        height: buttonHeight,
-                        width: buttonWidth,
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.credit_card),
-                          label: Text('Débito'),
-                          onPressed: isPrinterConnected
-                              ? () => makeSale(PaymentType.debit, context)
-                              : null,
-                        ),
-                      ),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (isDebitEnable)
                     SizedBox(
                       height: buttonHeight,
                       width: buttonWidth,
                       child: ElevatedButton.icon(
-                        icon: Icon(Icons.attach_money),
-                        label: Text('Efectivo'),
-                        onPressed: isPrinterConnected
-                            ? () => makeSale(PaymentType.cash, context)
+                        icon: Icon(Icons.credit_card),
+                        label: Text('Débito'),
+                        onPressed: canPrint
+                            ? () => makeSale(PaymentType.debit, context)
                             : null,
                       ),
                     ),
-                  ],
-                )),
+                  SizedBox(
+                    height: buttonHeight,
+                    width: buttonWidth,
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.attach_money),
+                      label: Text('Efectivo'),
+                      onPressed: canPrint
+                          ? () => makeSale(PaymentType.cash, context)
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -98,109 +89,74 @@ class _MyHomePageState extends State<Home> {
   checkBlutethotisConected() async {
     final provider = Provider.of<PrintProvider>(context);
     final isConnected = await provider.bluetooth.isConnected;
-    // if (isPrinterConnected != isConnected) {
     setState(() => isPrinterConnected = isConnected);
     provider.setConnectionStatus(isConnected);
-  }
-}
-
-class PrinterIcon extends StatelessWidget {
-  final bool isConnected;
-
-  const PrinterIcon({Key key, this.isConnected}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final cannotPrint = 'Su impresora no está conectada';
-    final canPrint = 'Su impresora está conectada';
-
-    return IconButton(
-      icon: isConnected
-          ? Icon(Icons.print, color: Colors.green)
-          : Icon(Icons.print_disabled, color: Colors.red),
-      onPressed: () {
-        Scaffold.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isConnected ? canPrint : cannotPrint),
-          ),
-        );
-      },
-    );
   }
 }
 
 // Make sales
 void makeSale(PaymentType paymentType, BuildContext context) async {
   final invoiceNumber = await createSale(paymentType);
-  print('Generating sale for folio: $invoiceNumber');
   createInvoice(paymentType, invoiceNumber);
-  printInvoice(invoiceNumber, context);
+
+  if (paymentType == PaymentType.cash) {
+    // The getSign service take too long to finish
+    await Future.delayed(Duration(milliseconds: 500));
+    final sign = await getSign(invoiceNumber);
+    printInvoice(invoiceNumber, sign, context);
+    saveLastInvoice(paymentType, invoiceNumber, sign, context);
+  } else {
+    // print('Show invoice');
+    saveLastInvoice(paymentType, invoiceNumber, '', context);
+    showInvoiceDialog(context);
+  }
 }
 
-Future<int> createSale(PaymentType paymentType) async {
-  String createSaleUrl = '${Constants.BASE_URL}/creaVenta/';
+Future<void> showInvoiceDialog(BuildContext context) async {
+  final lastInvoice =
+      Provider.of<PrintProvider>(context, listen: false).lastInvoice;
 
-  final mapBody = <String, String>{
-    'idEmpresa': "a31f3cdf-01ee-11eb-8ea0-d71e11fcbec0",
-    // TODO: Change to idEmpresa
-    'total': "7000",
-    // TODO: Change to total
-    'glosa': Constants.DEFAULT_SALE_TEXT,
-    'metodoPago': paymentType.description,
-  };
-
-  final http.Response response = await http.post(
-    createSaleUrl,
-    body: jsonEncode(mapBody),
+  return showDialog<void>(
+    context: context,
+    // barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Boleta registrada'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(
+                  'Se ha generado su boleta N. ${lastInvoice.number} correctamente\n'),
+              Text('Forma de pago: ${lastInvoice.paymentType.description}'),
+              Text('Fecha: ${lastInvoice.date}'),
+              Text('Monto: ${lastInvoice.amount}'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
   );
-
-  if (kDebugMode) {
-    print('createSale');
-    print(mapBody);
-    print(response.statusCode);
-    print(response.body);
-  }
-
-  if (response.statusCode == 200) {
-    return int.parse(jsonDecode(response.body)['folio']);
-  }
-
-  throw 'Hubo un error creando la venta';
 }
 
-void createInvoice(PaymentType paymentType, int invoiceNumber) async {
-  String createSaleUrl = '${Constants.BASE_URL}/generaBoleta/';
-
-  final mapBody = <String, String>{
-    // Needed for endpoint
-    'rutReceptor': "",
-    // TODO: Change to idEmpresa
-    'idEmpresa': "a31f3cdf-01ee-11eb-8ea0-d71e11fcbec0",
-    // TODO: Change to total
-    'total': "7000",
-    'glosa': Constants.DEFAULT_SALE_TEXT,
-    'metodoPago': paymentType.description,
-    "folio": invoiceNumber.toString(),
-  };
-
-  final http.Response response = await http.post(
-    createSaleUrl,
-    body: jsonEncode(mapBody),
-  );
-
-  if (kDebugMode) {
-    print('createInvoice');
-    print(mapBody);
-    print(response.statusCode);
-    print(response.body);
-  }
-
-  if (response.statusCode != 200) {
-    throw 'Hubo un error creando la boleta';
-  }
-}
-
-void printInvoice(int invoiceNumber, BuildContext context) {
+void printInvoice(int invoiceNumber, String sign, BuildContext context) {
   PrintProvider provider = Provider.of<PrintProvider>(context, listen: false);
-  provider.printInvoice(invoiceNumber: invoiceNumber);
+  provider.printInvoice(invoiceNumber: invoiceNumber, sign: sign);
+}
+
+void saveLastInvoice(
+  PaymentType paymentType,
+  int number,
+  String sign,
+  BuildContext context,
+) {
+  PrintProvider provider = Provider.of<PrintProvider>(context, listen: false);
+  provider.saveLastInvoice(number, paymentType, sign);
 }

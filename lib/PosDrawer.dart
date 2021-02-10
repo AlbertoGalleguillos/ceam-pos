@@ -1,9 +1,13 @@
+import 'package:ceam_pos/enums/paymentType.dart';
 import 'package:ceam_pos/home.dart';
+import 'package:ceam_pos/models/Invoice.dart';
 import 'package:ceam_pos/print.dart';
+import 'package:ceam_pos/providers/PrintProvider.dart';
 import 'package:ceam_pos/settings.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ceam_pos/constants.dart' as Constants;
+import 'package:provider/provider.dart';
 
 class PosDrawer extends StatelessWidget {
   @override
@@ -18,7 +22,7 @@ class PosDrawer extends StatelessWidget {
             child: Center(
               child: Image.asset(Constants.CEAM_LOGO_PATH),
             ),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color(Constants.PRIMARY_COLOR),
             ),
           ),
@@ -40,20 +44,20 @@ class PosDrawer extends StatelessWidget {
             leading: const Icon(Icons.cached),
             title: const Text(Constants.MENU_REPRINT),
             onTap: () {
-              unAvailableSection(context);
+              printLastInvoice(context);
             },
           ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.print),
-            title: Text(Constants.MENU_PRINTER_SETTINGS),
+            leading: const Icon(Icons.print),
+            title: const Text(Constants.MENU_PRINTER_SETTINGS),
             onTap: () {
               Navigator.of(context).popAndPushNamed(PrinterApp.route);
             },
           ),
           ListTile(
-            leading: Icon(Icons.settings),
-            title: Text(Constants.MENU_OTHER_SETTINGS),
+            leading: const Icon(Icons.settings),
+            title: const Text(Constants.MENU_OTHER_SETTINGS),
             onTap: () {
               Navigator.of(context).popAndPushNamed(Settings.route);
             },
@@ -73,18 +77,61 @@ class PosDrawer extends StatelessWidget {
     );
   }
 
-  void unAvailableSection(BuildContext context) {
-    final String notAvailable = 'Función no disponible...';
-    final snackBar = SnackBar(
-      content: Text(notAvailable),
-      action: SnackBarAction(
-        label: 'Todavía !',
-        onPressed: () {},
-      ),
-    );
-    // TODO: change deprecated methods https://flutter.dev/docs/release/breaking-changes/scaffold-messenger
-    Scaffold.of(context).removeCurrentSnackBar();
-    Scaffold.of(context).showSnackBar(snackBar);
+  void printLastInvoice(BuildContext context) {
+    PrintProvider provider = Provider.of<PrintProvider>(context, listen: false);
+    Invoice lastInvoice = provider.lastInvoice;
+
+    if (lastInvoice == null) {
+      Scaffold.of(context).removeCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(
+        SnackBar(content: Text(Constants.NOT_INVOICE_AVAILABLE)),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    if (lastInvoice.paymentType == PaymentType.debit) {
+      showLastInvoiceDialog(context);
+    }
+
+    if (lastInvoice.paymentType == PaymentType.cash) {
+      provider.printLastInvoice();
+    }
+
+  }
+
+  Future<void> showLastInvoiceDialog(BuildContext context) async {
+    final lastInvoice =
+        Provider.of<PrintProvider>(context, listen: false).lastInvoice;
+
     Navigator.pop(context);
+
+    return showDialog<void>(
+      context: context,
+      // barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Boleta registrada'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('La última boleta generada correctamente es la N. ${lastInvoice.number}\n'),
+                Text('Forma de pago: ${lastInvoice.paymentType.description}'),
+                Text('Fecha: ${lastInvoice.date}'),
+                Text('Monto: ${lastInvoice.amount}'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
